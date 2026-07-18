@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#E50914">
+    <title>Watch Together — Watch Movies Together Online Free</title>
+    <meta name="description" content="Watch Together free — share your screen and watch any movie or TV show with friends in real time. Live chat, works with YouTube, MP4 & more. No download.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link rel="stylesheet" href="landing.css">
+</head>
+<body class="landing-body">
+    
+    <nav class="landing-nav">
+        <div class="logo">
+            <span class="material-symbols-outlined">smart_display</span>
+            WatchTogether
+        </div>
+    </nav>
+
+    <main class="hero-wrapper">
+        <h1 class="hero-title">Watch Movies Together Online Free</h1>
+        <p class="hero-subtitle">
+            <strong>WatchTogether</strong> is the free watch party app that lets you watch videos together online with friends in real time. 
+            Synchronized playback and live group chat — no download, no browser extension required.
+        </p>
+
+        <div class="badges">
+            <span class="badge">✓ 100% Free</span>
+            <span class="badge">✓ No Download</span>
+            <span class="badge">✓ No Extension</span>
+            <span class="badge">✓ Works with YouTube</span>
+            <span class="badge">✓ Works on Mobile</span>
+        </div>
+
+        <div class="entry-card" id="flowContainer">
+            
+            <!-- Step 1: Alias -->
+            <div id="stepAlias" class="flow-step active">
+                <h2>Create a free account</h2>
+                <p>Enter a username to get started. No sign-up required.</p>
+                <label class="input-label">Username</label>
+                <input type="text" id="aliasInput" class="wt-input" placeholder="Enter your name" autocomplete="off">
+                <button id="nextBtn" class="wt-btn wt-btn-primary">Continue</button>
+                <p class="error-text" id="aliasError">Username is required</p>
+            </div>
+
+            <!-- Step 2: Choice -->
+            <div id="stepChoice" class="flow-step">
+                <h2>Welcome, <span id="displayName">Guest</span></h2>
+                <p>Create a new watch room or join an existing one.</p>
+                <button id="createBtn" class="wt-btn wt-btn-primary">Create Room</button>
+                <button id="showJoinBtn" class="wt-btn wt-btn-secondary">Join Room</button>
+            </div>
+
+            <!-- Step 3: Join -->
+            <div id="stepJoin" class="flow-step">
+                <h2>Join a Room</h2>
+                <p>Enter the room code shared by your friend.</p>
+                <label class="input-label">Room Code</label>
+                <input type="text" id="roomInput" class="wt-input" placeholder="e.g. 1a2b3c4d" autocomplete="off">
+                <button id="joinBtn" class="wt-btn wt-btn-primary">Join Watch Party</button>
+                <button id="backToChoice" class="wt-btn wt-btn-secondary">Back</button>
+                <p class="error-text" id="joinError">Room code is required</p>
+            </div>
+
+        </div>
+    </main>
+
+    <section class="seo-content">
+        <h2>What is WatchTogether?</h2>
+        <p>
+            WatchTogether is a <strong>free online watch party platform</strong> that lets you
+            <strong>watch movies and TV shows together online</strong> with your friends, family, or partner — no matter where they are in the world.
+            One person hosts by sharing a video link, friends join with a room code, and everyone watches in perfect sync with a live chat sidebar.
+        </p>
+
+        <h2>How to Watch Together Online — Step by Step</h2>
+        <ol>
+            <li><strong>Create an alias</strong> — Enter your name above in under 5 seconds.</li>
+            <li><strong>Create a watch room</strong> — Click "Create Room" and get a unique invite code. Share the code with friends.</li>
+            <li><strong>Load a Video</strong> — Paste a YouTube link or direct video file into the player.</li>
+            <li><strong>Watch together</strong> — Friends join instantly using the room code. Everyone watches in perfect sync. Chat and react together in real time.</li>
+        </ol>
+
+        <h2>Features — Everything You Need for a Perfect Virtual Movie Night</h2>
+        <div class="features-grid">
+            <div class="feature-box">
+                <strong>📺 Real-Time Sync</strong>
+                Ultra-low latency NTP-style synchronization. If someone pauses or buffers, the whole room stays together automatically.
+            </div>
+            <div class="feature-box">
+                <strong>💬 Live Group Chat</strong>
+                Chat with everyone in the room as you watch. React, comment, and share the experience just like you would sitting together on the same couch.
+            </div>
+            <div class="feature-box">
+                <strong>🔒 Private Watch Rooms</strong>
+                Every room has a unique invite code. Only people you share the code with can join — your movie night stays private.
+            </div>
+            <div class="feature-box">
+                <strong>📱 Works on Any Device</strong>
+                Viewers can join and chat on mobile, tablet, or desktop. Our responsive interface adapts perfectly to any screen size.
+            </div>
+        </div>
+
+        <h2>WatchTogether vs Other Watch Party Apps</h2>
+        <p>Looking for a Teleparty alternative (formerly Netflix Party) or Scener alternative? Here's how WatchTogether compares:</p>
+        <ul>
+            <li><strong>No browser extension needed</strong> — Teleparty requires a Chrome extension. WatchTogether doesn't.</li>
+            <li><strong>Completely free</strong> — No premium tiers, no paywalls, no ads.</li>
+            <li><strong>No app download</strong> — Works entirely in your web browser.</li>
+        </ul>
+    </section>
+
+    <footer>
+        <p>© 2026 WatchTogether Clone · All rights reserved</p>
+    </footer>
+
+    <script src="js/landing.js"></script>
+</body>
+</html>

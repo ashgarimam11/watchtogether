@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#030014">
+    <title>Watch Together | Live</title>
+    
+    <!-- Commercial Grade Typography (Inter + Material Symbols) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="theme-dark">
+
+    <!-- Premium Background Effects -->
+    <div class="bg-fx-orb orb-1"></div>
+    <div class="bg-fx-orb orb-2"></div>
+    <div class="bg-fx-noise"></div>
+
+    <!-- Toast Notifications Layer -->
+    <div id="knockContainer" class="knock-container" aria-live="polite"></div>
+
+    <!-- ════════════════════════════════════════════════
+         AUTH MODAL (Frictionless Onboarding)
+         ════════════════════════════════════════════════ -->
+    <div id="welcomeModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="auth-dialog">
+            <div class="auth-header">
+                <span class="material-symbols-outlined brand-logo">play_circle</span>
+                <h2 id="modalTitle">Join Session</h2>
+            </div>
+            <div class="auth-body">
+                <p id="modalDesc">Enter a display name to enter the live room.</p>
+                <div class="form-group">
+                    <label for="modalUsername">Display Name</label>
+                    <input type="text" id="modalUsername" placeholder="e.g. Alex" maxlength="20" autocomplete="off" autofocus>
+                </div>
+                <input type="hidden" id="modalRoom">
+                <p id="modalStatus" class="status-message error"></p>
+            </div>
+            <div class="auth-footer">
+                <button id="modalActionBtn" class="btn btn-primary btn-block">Continue to Room</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════
+         THEATER MODE LAYOUT (Twitch / Discord style)
+         ════════════════════════════════════════════════ -->
+    <div class="theater-layout" id="mainLayout">
+        
+        <!-- MEDIA AREA (Left Side, Fills remaining space) -->
+        <main class="media-area" id="videoWrapper">
+            
+            <!-- Static Media Header -->
+            <div class="media-header-bar" style="display: flex; align-items: center; justify-content: flex-start; gap: 24px; padding: 12px 24px; background: rgba(10, 5, 20, 0.6); border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; position: relative; z-index: 100;">
+                <div class="hud-brand" style="display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.2rem; color: white;">
+                    <span class="material-symbols-outlined" style="color: var(--c-accent); font-size: 24px;">live_tv</span>
+                    <span id="navRoomDisplay" class="room-name">Watch Together</span>
+                    <span id="roomStatusDisplay" class="status-indicator live" style="margin-left: 12px; transform: scale(0.85); transform-origin: left; display: inline-flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.7); padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; text-transform: uppercase;">Live Session</span>
+                </div>
+
+                <div class="hud-actions" style="display: flex; align-items: center; gap: 16px;">
+                    <div class="viewer-count" style="display: flex; align-items: center; gap: 8px; color: white; font-weight: 600; font-size: 0.95rem; background: rgba(0,0,0,0.5); padding: 6px 12px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1);">
+                        <span class="material-symbols-outlined" style="color: var(--c-primary); font-size: 18px;">group</span>
+                        <span id="userCountDisplay">0</span>
+                    </div>
+                    <button id="inviteBtn" class="btn btn-secondary btn-sm">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">person_add</span>
+                        <span id="inviteText">Invite</span>
+                    </button>
+                    <button id="customFsBtn" class="btn btn-icon" style="width: 32px; height: 32px; min-height: 32px; font-size: 18px;" aria-label="Fullscreen">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">fullscreen</span>
+                    </button>
+                </div>
+
+                <!-- Mobile viewer count chip (compact, shown only on mobile) -->
+                <div class="mobile-viewer-count">
+                    <span class="material-symbols-outlined">group</span>
+                    <span id="mobileUserCountDisplay">0</span>
+                </div>
+
+                <!-- Mobile menu button (3-line) — shown only on mobile -->
+                <button id="mediaMenuBtn" class="media-menu-btn" aria-label="Room options">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+            </div>
+
+            <!-- Mobile menu popup panel — shown only on mobile when open -->
+            <div id="mediaMenuPanel" class="media-menu-panel">
+                <div class="panel-row">
+                    <span class="panel-status">● Live Session</span>
+                    <span class="panel-room-name">Room: <span id="panelRoomDisplay">—</span></span>
+                </div>
+                <button id="panelInviteBtn" class="btn btn-primary btn-block">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">person_add</span>
+                    <span id="panelInviteText">Invite</span>
+                </button>
+            </div>
+
+            <!-- Main Player Container (Trapped with overflow: hidden and z-index: 1) -->
+            <div class="player-container" style="flex: 1; min-height: 0; position: relative; background: #000; display: flex; overflow: hidden; z-index: 1;">
+                <!-- Absolute Player Layer -->
+                <video id="htmlPlayer" class="hidden" controls playsinline style="width: 100%; height: 100%; outline: none; border: none;"></video>
+                <div id="ytPlayerWrapper" class="hidden" style="width:100%; height:100%;">
+                    <div id="player" style="width:100%; height:100%;"></div>
+                </div>
+                <iframe id="ghostIframe" class="hidden" allowfullscreen allow="autoplay; fullscreen" style="width:100%; height:100%; border:none; outline:none;"></iframe>
+                
+                <!-- Idle / Autoplay Blocks -->
+                <div id="idleOverlay" class="media-overlay-layer">
+                    <div class="media-empty-state">
+                        <span class="material-symbols-outlined icon-xl">tv_off</span>
+                        <h3>No Media Playing</h3>
+                        <p>Load a URL to start the stream.</p>
+                    </div>
+                </div>
+                <div id="autoplayOverlay" class="media-overlay-layer autoplay-layer">
+                    <div class="media-empty-state">
+                        <span class="material-symbols-outlined icon-xl pulse">play_circle</span>
+                        <h3>Tap to Unmute & Play</h3>
+                    </div>
+                </div>
+
+                <!-- Reaction Layer -->
+                <div id="reactionContainer" class="reaction-container" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; overflow: hidden;"></div>
+            </div>
+
+            <!-- Static Media Footer -->
+            <div class="media-footer-bar" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: rgba(10, 5, 20, 0.6); border-top: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; transition: background 0.3s; position: relative; z-index: 70;">
+                <div class="quick-reactions" id="quickReactions" style="display: flex; gap: 8px; opacity: 1; transform: none;">
+                    <button class="reaction-btn">💖</button>
+                    <button class="reaction-btn">😂</button>
+                    <button class="reaction-btn">😮</button>
+                    <button class="reaction-btn">😢</button>
+                    <button class="reaction-btn">🔥</button>
+                </div>
+                
+                <div class="player-toggles" style="display: flex; gap: 12px; align-items: center;">
+                    <input type="text" id="fsChatInput" class="fs-chat-input" placeholder="Type..." style="display: none; background: rgba(0,0,0,0.2); border: 1px solid transparent; color: rgba(255,255,255,0.5); border-radius: 99px; padding: 8px 16px; outline: none; transition: all 0.2s; backdrop-filter: blur(4px); width: 120px;">
+                    <select id="qualitySelector" class="btn btn-glass btn-sm hidden"><option value="-1">Auto</option></select>
+                    <!-- Mobile fullscreen button — shown only on mobile -->
+                    <button id="customFsBtnMobile" class="btn btn-icon custom-fs-btn-mobile" aria-label="Fullscreen">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">fullscreen</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Fallback FS Overlay -->
+            <div id="fsOverlay" class="fs-mobile-overlay">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button id="exitFsBtn" class="btn btn-icon btn-glass"><span class="material-symbols-outlined">close_fullscreen</span></button>
+                    <div class="fs-badge">
+                        <span id="fsRoomDisplay">Room</span>
+                        <span class="dot">•</span>
+                        <span class="material-symbols-outlined">group</span> <span id="fsUserCountDisplay">0</span>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+
+        <!-- DRAGGABLE RESIZER (Tablet Landscape Feature) -->
+        <div id="resizer" class="layout-resizer"></div>
+
+        <!-- SIDEBAR (Right Side, Fixed width) -->
+        <aside class="chat-sidebar" id="chatColumn">
+            <!-- Header Tabs -->
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" data-tab="tab-chat">Chat</button>
+                <button class="tab-btn" data-tab="tab-queue">Queue</button>
+                <button class="tab-btn" data-tab="tab-users">Users</button>
+            </div>
+            
+            <!-- TAB: CHAT -->
+            <div id="tab-chat" class="tab-content active">
+                <div class="chat-messages-container" id="chatMessages" aria-live="polite">
+                    <div class="chat-welcome">Welcome to the chat room!</div>
+                </div>
+                <div class="chat-composer-area">
+                    <emoji-picker id="emojiPicker" class="hidden"></emoji-picker>
+                    <div class="composer-box">
+                        <input type="text" id="chatInput" placeholder="Send a message..." autocomplete="off">
+                        <div class="composer-actions">
+                            <button id="emojiBtn" class="btn btn-icon btn-subtle" aria-label="Emojis">
+                                <span class="material-symbols-outlined">sentiment_satisfied</span>
+                            </button>
+                            <button id="touchBtn" class="btn btn-icon btn-subtle" aria-label="Nudge">
+                                <span class="material-symbols-outlined">waving_hand</span>
+                            </button>
+                            <button id="sendBtn" class="btn btn-primary btn-icon" aria-label="Send">
+                                <span class="material-symbols-outlined">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: QUEUE -->
+            <div id="tab-queue" class="tab-content">
+                <div class="queue-container">
+                    <div class="queue-header">
+                        <h3>Media Queue</h3>
+                        <p>Paste a link to play or add to queue.</p>
+                    </div>
+                    <div class="queue-input-group">
+                        <div class="hud-search sidebar-search" style="margin-bottom: 12px;">
+                            <span class="material-symbols-outlined search-icon">link</span>
+                            <input type="text" id="videoInput" placeholder="Paste YouTube or video link..." aria-label="Media URL">
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button id="loadBtn" class="btn btn-secondary btn-block" style="flex: 1;">
+                                <span class="material-symbols-outlined">play_arrow</span> Play Now
+                            </button>
+                            <button id="queueBtn" class="btn btn-primary btn-block" style="flex: 1;">
+                                <span class="material-symbols-outlined">playlist_add</span> Queue
+                            </button>
+                        </div>
+                    </div>
+                    <div class="queue-list" id="queueList">
+                        <!-- Items injected here by JS -->
+                        <div class="queue-empty" id="queueEmptyState">
+                            <span class="material-symbols-outlined">queue_music</span>
+                            <p>Queue is empty.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: USERS -->
+            <div id="tab-users" class="tab-content">
+                <div class="users-container">
+                    <div class="users-header">
+                        <h3>Room Members</h3>
+                        <span class="member-count-badge" id="memberCountBadge">0 online</span>
+                    </div>
+                    <div id="memberList" class="member-list">
+                        <!-- Members will be dynamically rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+    </div>
+
+    <script>
+        // Simple Vanilla JS for Tab Switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

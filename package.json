@@ -1,0 +1,15 @@
+{
+  "name": "watch-together",
+  "version": "1.0.0",
+  "description": "Real-time YouTube sync and chat with Firebase",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.8.3",
+    "uuid": "^14.0.1",
+    "yt-search": "^2.13.1"
+  }
+}
